@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header" />
+<body>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+    <h3>로그인</h3>
+    <div class="form-group">
+        <label>아이디</label>
+        <input type="text" id="memberId" name="memberId" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="password" class="form-control">
+    </div>
+    <button id="btnLogin" class="btn btn-primary">로그인</button>
+    <div th:replace="fragments/footer :: footer" />
+</div> <!-- /container -->
+<script src="/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+
+        function apiErrCode(request){
+            var state = request.status;
+            var msg = "";
+
+            if(state == 500){
+                var responseMessage = JSON.parse(request.responseText);
+                if(responseMessage.statusMessage != null){
+                    msg = "[" + responseMessage.statusCode + "]" + " " + responseMessage.statusMessage;
+                }else{
+                    switch (state){
+                        case 401 :
+                            msg ="토큰이 유효하지 않음";
+                            break;
+                        case 500 :
+                            msg ="Server Invalid";
+                            break;
+                        case 4201 :
+                            msg ="Json Missing";
+                            break;
+                        case 4301 :
+                            msg ="키를 찾을 수 없음";
+                            break;
+                        default :
+                            msg ="에러 코드를 확인할 수 없습니다.";
+                    }
+                }
+
+            }else{
+                msg ="서버 에러가 발생했습니다. (" + state + ")";
+            }
+
+            return msg;
+        }
+
+        function login() {
+            var form = {
+                memberId: $("#memberId").val(),
+                password: $("#password").val()
+            };
+
+            $.ajax({
+                url: '/api/v1/loginMember',
+                type: 'POST',
+                data: JSON.stringify(form),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function (res) {
+                    alert("로그인 완료!");
+                    location.href = "/";
+                },
+                error : function(request) {
+                    alert(apiErrCode(request));
+                }
+            });
+        }
+
+        $("#btnLogin").click(function(){
+            login();
+        });
+    });
+</script>
+</body>
+</html>

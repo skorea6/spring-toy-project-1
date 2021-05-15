@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:mysql://skorea.duckdns.org:3306/mshop?serverTimezone=UTC
+    username: userall
+    password: joon1616!~!
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+#      show_sql: true
+        format_sql: true
+        # fetch size는 쿼리 한번에 in절에 (?, ? ..) 총 몇개가 들어갈것인지. 100~1000 추천, 500~800추천
+        default_batch_fetch_size: 1000
+    # osiv 대규모 트래픽 발생시 false.
+    open-in-view: false
+
+
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.type: trace
