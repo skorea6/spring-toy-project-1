@@ -34,7 +34,7 @@ public class Member extends BaseDomain {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.permission = "user";
-        this.sessionKey = RandomUtil.randomKey(25); // 임시로 초기에 발급하도록 10자리 랜덤키
+        this.sessionKey = RandomUtil.randomKey(35); // 임시로 초기에 발급하도록 10자리 랜덤키
     }
 
     public void setPassword(String password) {

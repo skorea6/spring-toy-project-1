@@ -4,14 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
-import shop.mshop.constant.CommonConstant;
-import shop.mshop.domain.Member;
-import shop.mshop.exception.global.ApiException;
-import shop.mshop.repository.MemberRepository;
-import shop.mshop.service.MemberService;
 import shop.mshop.util.HttpSessionUtils;
 
 import javax.servlet.http.HttpSession;
@@ -32,17 +26,27 @@ public class MemberController {
     }
 
     @GetMapping("/member/signup")
-    public ModelAndView createForm() {
+    public ModelAndView createForm(HttpSession httpSession) {
         ModelAndView mView = new ModelAndView();
-        mView.setViewName("member/signupMember");
+
+        if(!HttpSessionUtils.isLoginUser(httpSession)){
+            mView.setViewName("member/signupMember");
+        }else{
+            mView.setViewName("index");
+        }
 
         return mView;
     }
 
     @GetMapping("/member/login")
-    public ModelAndView loginForm() {
+    public ModelAndView loginForm(HttpSession httpSession) {
         ModelAndView mView = new ModelAndView();
-        mView.setViewName("member/loginMember");
+
+        if(!HttpSessionUtils.isLoginUser(httpSession)){
+            mView.setViewName("member/loginMember");
+        }else{
+            mView.setViewName("index");
+        }
 
         return mView;
     }
@@ -57,6 +61,20 @@ public class MemberController {
             mView.setViewName("index");
         }else{
             mView.setViewName("member/updateMember");
+        }
+
+        return mView;
+    }
+
+    // 무조건 로그인 안돼있으면 튕기기
+    @GetMapping("/member/updatePw")
+    public ModelAndView updatePwForm(HttpSession httpSession) {
+        ModelAndView mView = new ModelAndView();
+
+        if(!HttpSessionUtils.isLoginUser(httpSession)){
+            mView.setViewName("index");
+        }else{
+            mView.setViewName("member/updatePwMember");
         }
 
         return mView;

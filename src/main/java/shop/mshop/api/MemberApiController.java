@@ -1,7 +1,6 @@
 package shop.mshop.api;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,12 +10,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import shop.mshop.constant.ApiExceptionConstant;
 import shop.mshop.domain.Member;
 import shop.mshop.message.StatusResponse;
-import shop.mshop.message.request.CreateMemberRequest;
-import shop.mshop.message.request.LoginMemberRequest;
-import shop.mshop.message.request.UpdateMemberRequest;
-import shop.mshop.message.response.CreateMemberResponse;
-import shop.mshop.message.response.LoginMemberResponse;
-import shop.mshop.message.response.UpdateMemberResponse;
+import shop.mshop.message.request.*;
+import shop.mshop.message.response.*;
 import shop.mshop.service.MemberService;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.IpAddressUtil;
@@ -82,6 +77,36 @@ public class MemberApiController {
         Long updatedMemberId = memberService.update(request, HttpSessionUtils.getMemberFromSession(httpSession));
 
         return new StatusResponse<>(new UpdateMemberResponse(updatedMemberId));
+    }
+
+    @PostMapping("/api/v1/updatePwMember")
+    public StatusResponse<UpdatePwMemberResponse> updateMemberV1(@RequestBody UpdatePwMemberRequest request, HttpSession httpSession) {
+        // 빈값 체크 Exception
+        apiExceptionConstant.checkRequireAttr(request.getOldPassword(), "oldPassword");
+        apiExceptionConstant.checkRequireAttr(request.getNewPassword1(), "newPassword1");
+        apiExceptionConstant.checkRequireAttr(request.getNewPassword2(), "newPassword2");
+
+        // 멤버 찾기
+        Long updatedMemberId = memberService.updatePw(request, HttpSessionUtils.getMemberFromSession(httpSession));
+
+        // 세션 풀어버리기
+        HttpSessionUtils.setLogoutSession(httpSession);
+
+        return new StatusResponse<>(new UpdatePwMemberResponse(updatedMemberId));
+    }
+
+    @PostMapping("/api/v1/deleteMember")
+    public StatusResponse<DeleteMemberResponse> updateMemberV1(@RequestBody DeleteMemberRequest request, HttpSession httpSession) {
+        // 빈값 체크 Exception
+        apiExceptionConstant.checkRequireAttr(request.getPassword(), "password");
+
+        // 멤버 찾기
+        Member deletedMember = memberService.delete(request, HttpSessionUtils.getMemberFromSession(httpSession));
+
+        // 세션 풀어버리기
+        HttpSessionUtils.setLogoutSession(httpSession);
+
+        return new StatusResponse<>(new DeleteMemberResponse(deletedMember.getId(), deletedMember.getName()));
     }
 
 

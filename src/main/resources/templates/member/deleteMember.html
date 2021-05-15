@@ -4,36 +4,22 @@
 <body>
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-    <div class="jumbotron">
-        <h1>환영합니다!</h1>
-        <p id="name">로그인하지 않았습니다.</p>
-        <p class="lead">회원 기능</p>
-        <p>
-            <a class="btn btn-lg btn-secondary" href="/member/signup">회원 가입</a>
-            <a class="btn btn-lg btn-secondary" href="/member/login">로그인</a>
-            <a class="btn btn-lg btn-secondary" href="/member/logout">로그아웃</a>
-        </p>
-        <p>
-            <a class="btn btn-lg btn-secondary" href="/member/update">회원정보 변경</a>
-            <a class="btn btn-lg btn-secondary" href="/member/updatePw">비밀번호 변경</a>
-            <a class="btn btn-lg btn-secondary" href="/member/delete">회원 탈퇴</a>
-        </p>
-        <p class="lead">상품 기능</p>
-        <p>
-            <a class="btn btn-lg btn-dark" href="/items/new">상품 등록</a>
-            <a class="btn btn-lg btn-dark" href="/items">상품 목록</a>
-        </p>
-        <p class="lead">주문 기능</p>
-        <p>
-            <a class="btn btn-lg btn-info" href="/order">상품 주문</a>
-            <a class="btn btn-lg btn-info" href="/orders">주문 내역</a>
-        </p>
+    <h3>회원 탈퇴</h3>
+    <div class="form-group">
+        <label>아이디</label>
+        <input type="text" id="memberId" class="form-control" disabled>
     </div>
+    <div class="form-group">
+        <label>현재 비밀번호</label>
+        <input type="password" id="password" class="form-control">
+    </div>
+    <button id="btnDelete" class="btn btn-primary">회원 탈퇴</button>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
 <script src="/js/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
+
         function apiErrCode(request){
             var state = request.status;
             var msg = "";
@@ -68,17 +54,45 @@
             return msg;
         }
 
+        function deleteUser() {
+            var form = {
+                password: $("#password").val()
+            };
+
+            $.ajax({
+                url: '/api/v1/deleteMember',
+                type: 'POST',
+                data: JSON.stringify(form),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function (res) {
+                    alert("회원탈퇴 완료!");
+                    location.href = "/";
+                },
+                error : function(request) {
+                    alert(apiErrCode(request));
+                }
+            });
+        }
+
         // 동기식 통신
         $.ajax({
-            url: '/api/v1/model/index',
+            url: '/api/v1/model/deleteMember',
             type: 'GET',
             async: false,
             contentType: "application/json",
             dataType: 'json',
             success: function (res) {
                 var result = res.data;
-                $("#name").html(result.name + "님, 환영합니다~");
+                $("#memberId").val(result.memberId);
+            },
+            error : function(request) {
+                alert(apiErrCode(request));
             }
+        });
+
+        $("#btnDelete").click(function(){
+            deleteUser();
         });
     });
 </script>

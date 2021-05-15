@@ -8,7 +8,9 @@ import shop.mshop.api.MemberApiController;
 import shop.mshop.constant.CommonConstant;
 import shop.mshop.domain.Member;
 import shop.mshop.exception.global.ApiException;
+import shop.mshop.message.request.DeleteMemberRequest;
 import shop.mshop.message.request.UpdateMemberRequest;
+import shop.mshop.message.request.UpdatePwMemberRequest;
 import shop.mshop.repository.MemberRepository;
 import shop.mshop.util.BaseUtil;
 import shop.mshop.util.HttpSessionUtils;
@@ -101,6 +103,53 @@ public class MemberService {
         member.updateMember(request.getName(), request.getEmail(), request.getPhoneNumber(), request.getAddress());
 
         return member.getId();
+    }
+
+    @Transactional
+    public Long updatePw(UpdatePwMemberRequest request, String sessionKey) {
+        // 위의 멤버는 현재 세션의 멤버를 가져온것이에요.
+        Member member = this.findMemberBySession(sessionKey);
+
+        // 현재 비밀번호와 맞는지 확인
+        if (!passwordEncoder.matches(request.getOldPassword(), member.getPassword())) {
+            throw new ApiException(CommonConstant.ERR_NOT_SEARCH_MATCHED_KEY, "비밀번호가 일치하지 않습니다.", null);
+        }
+
+        // 새로운 비밀번호와 재입력한 비밀번호 일치 확인
+        if (!request.getNewPassword1().equals(request.getNewPassword2())) {
+            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "새로운 비밀번호와 재입력한 비밀번호가 같지 않습니다.", null);
+        }
+
+        // 기존 비밀번호와 동일한지 확인
+        if (request.getOldPassword().equals(request.getNewPassword1())) {
+            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "기존 비밀번호와 동일할 수 없습니다.", null);
+        }
+
+        // 비번은 6글자 이상 18글자 이하로
+        validateLengthPassword(request.getNewPassword1());
+
+        // 비밀번호는 영어와 숫자로 이루어지게 설정
+        validateRulePassword(request.getNewPassword1());
+
+        // DB
+        member.setPassword(passwordEncoder.encode(request.getNewPassword1()));
+
+        return member.getId();
+    }
+
+    @Transactional
+    public Member delete(DeleteMemberRequest request, String sessionKey) {
+        Member member = this.findMemberBySession(sessionKey);
+
+        // 현재 비밀번호와 맞는지 확인
+        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+            throw new ApiException(CommonConstant.ERR_NOT_SEARCH_MATCHED_KEY, "비밀번호가 일치하지 않습니다.", null);
+        }
+
+        // DB
+        memberRepository.delete(member);
+
+        return member;
     }
 
     private void validateLengthName(String name) {
