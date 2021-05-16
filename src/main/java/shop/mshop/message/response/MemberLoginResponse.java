@@ -5,7 +5,8 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class DeleteMemberResponse {
+public class MemberLoginResponse {
     private Long id;
+    private String memberId;
     private String name;
 }

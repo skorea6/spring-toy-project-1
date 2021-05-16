@@ -27,7 +27,7 @@ public class MemberApiController {
     ApiExceptionConstant apiExceptionConstant = new ApiExceptionConstant();
 
     @PutMapping("/api/v1/signupMember")
-    public StatusResponse<CreateMemberResponse> signupMemberV1(@RequestBody CreateMemberRequest request) {
+    public StatusResponse<MemberSignupResponse> signupMemberV1(@RequestBody MemberSignupRequest request) {
         // 오류 Exception 처리
         apiExceptionConstant.checkRequireAttr(request.getMemberId(), "memberId");
         apiExceptionConstant.checkRequireAttr(request.getPassword(), "password");
@@ -47,24 +47,24 @@ public class MemberApiController {
         member.setIpAddress(ipAddress);
         Long savedMemberId = memberService.save(member);
 
-        return new StatusResponse<>(new CreateMemberResponse(savedMemberId));
+        return new StatusResponse<>(new MemberSignupResponse(savedMemberId));
     }
 
 
     @PostMapping("/api/v1/loginMember")
-    public StatusResponse<LoginMemberResponse> loginMemberV1(@RequestBody LoginMemberRequest request, HttpSession httpSession) {
+    public StatusResponse<MemberLoginResponse> loginMemberV1(@RequestBody MemberLoginRequest request, HttpSession httpSession) {
         apiExceptionConstant.checkRequireAttr(request.getMemberId(), "memberId");
         apiExceptionConstant.checkRequireAttr(request.getPassword(), "password");
 
         // 멤버 찾기
         Member member = memberService.loginByMemberId(request.getMemberId(), request.getPassword(), httpSession);
 
-        return new StatusResponse<>(new LoginMemberResponse(member.getId(), member.getMemberId(), member.getName()));
+        return new StatusResponse<>(new MemberLoginResponse(member.getId(), member.getMemberId(), member.getName()));
     }
 
 
     @PostMapping("/api/v1/updateMember")
-    public StatusResponse<UpdateMemberResponse> updateMemberV1(@RequestBody UpdateMemberRequest request, HttpSession httpSession) {
+    public StatusResponse<MemberUpdateResponse> updateMemberV1(@RequestBody MemberUpdateRequest request, HttpSession httpSession) {
         // 빈값 체크 Exception
         apiExceptionConstant.checkRequireAttr(request.getName(), "name");
         apiExceptionConstant.checkRequireAttr(request.getEmail(), "email");
@@ -76,11 +76,11 @@ public class MemberApiController {
         // 멤버 찾기
         Long updatedMemberId = memberService.update(request, HttpSessionUtils.getMemberFromSession(httpSession));
 
-        return new StatusResponse<>(new UpdateMemberResponse(updatedMemberId));
+        return new StatusResponse<>(new MemberUpdateResponse(updatedMemberId));
     }
 
     @PostMapping("/api/v1/updatePwMember")
-    public StatusResponse<UpdatePwMemberResponse> updateMemberV1(@RequestBody UpdatePwMemberRequest request, HttpSession httpSession) {
+    public StatusResponse<MemberUpdatePwResponse> updateMemberV1(@RequestBody MemberUpdatePwRequest request, HttpSession httpSession) {
         // 빈값 체크 Exception
         apiExceptionConstant.checkRequireAttr(request.getOldPassword(), "oldPassword");
         apiExceptionConstant.checkRequireAttr(request.getNewPassword1(), "newPassword1");
@@ -92,21 +92,21 @@ public class MemberApiController {
         // 세션 풀어버리기
         HttpSessionUtils.setLogoutSession(httpSession);
 
-        return new StatusResponse<>(new UpdatePwMemberResponse(updatedMemberId));
+        return new StatusResponse<>(new MemberUpdatePwResponse(updatedMemberId));
     }
 
     @PostMapping("/api/v1/deleteMember")
-    public StatusResponse<DeleteMemberResponse> updateMemberV1(@RequestBody DeleteMemberRequest request, HttpSession httpSession) {
+    public StatusResponse<MemberDeleteResponse> updateMemberV1(@RequestBody MemberDeleteRequest request, HttpSession httpSession) {
         // 빈값 체크 Exception
         apiExceptionConstant.checkRequireAttr(request.getPassword(), "password");
 
         // 멤버 찾기
-        Member deletedMember = memberService.delete(request, HttpSessionUtils.getMemberFromSession(httpSession));
+        Long id = memberService.delete(request, HttpSessionUtils.getMemberFromSession(httpSession));
 
         // 세션 풀어버리기
         HttpSessionUtils.setLogoutSession(httpSession);
 
-        return new StatusResponse<>(new DeleteMemberResponse(deletedMember.getId(), deletedMember.getName()));
+        return new StatusResponse<>(new MemberDeleteResponse(id));
     }
 
 

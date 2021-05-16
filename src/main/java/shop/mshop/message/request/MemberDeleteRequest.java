@@ -3,6 +3,6 @@ package shop.mshop.message.request;
 import lombok.Data;
 
 @Data
-public class DeleteMemberRequest {
+public class MemberDeleteRequest {
     private String password;
 }

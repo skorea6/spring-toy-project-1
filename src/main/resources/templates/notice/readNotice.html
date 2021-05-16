@@ -4,34 +4,17 @@
 <body>
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-    <h3>게시판</h3>
-    <div>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>상품명</th>
-                <th>가격</th>
-                <th>재고수량</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-
-            <tr th:each="item : ${items}">
-                <td th:text="${item.id}"></td>
-                <td th:text="${item.name}"></td>
-                <td th:text="${item.price}"></td>
-                <td th:text="${item.stockQuantity}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+    <h3 id="title"></h3>
+    <span>글쓴이: <span id="writer"></span></span><br>
+    <span>등록일: <span id="date"></span></span><br><br>
+    <h5 id="content"></h5><br>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
+<input th:value="${nowId}" type="text" id="nowId" hidden="true"/>
 <script src="/js/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
+
         function apiErrCode(request){
             var state = request.status;
             var msg = "";
@@ -66,21 +49,30 @@
             return msg;
         }
 
+        var form = {
+            id: $("#nowId").val()
+        };
+
+        // 동기식 통신
         $.ajax({
-            url: '/api/v1/model/listBoard',
-            type: 'GET',
+            url: '/api/v1/notice/read',
+            type: 'POST',
+            data: JSON.stringify(form),
             async: false,
             contentType: "application/json",
             dataType: 'json',
             success: function (res) {
                 var result = res.data;
-                $("#memberId").val(result.memberId);
+                $("#title").html('제목: ' + result.title);
+                $("#writer").html(result.writerName + ' (' + result.writerMemberId + ')');
+                $("#date").html(result.createdDate);
+                $("#content").html(result.content);
             },
             error : function(request) {
                 alert(apiErrCode(request));
+                location.href='/notice/list';
             }
         });
-
     });
 </script>
 </body>

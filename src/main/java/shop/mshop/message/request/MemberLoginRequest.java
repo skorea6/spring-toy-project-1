@@ -3,7 +3,7 @@ package shop.mshop.message.request;
 import lombok.Data;
 
 @Data
-public class LoginMemberRequest {
+public class MemberLoginRequest {
     private String memberId;
     private String password;
 }

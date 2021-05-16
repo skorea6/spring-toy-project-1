@@ -30,7 +30,7 @@ public class Member extends BaseDomain {
 
 
     @OneToMany(mappedBy = "member")
-    private List<Board> boards = new ArrayList<>();
+    private List<Notice> notices = new ArrayList<>();
 
 
     public Member(String memberId, String password, String name, Address address, String email, String phoneNumber) {
@@ -55,6 +55,6 @@ public class Member extends BaseDomain {
         this.phoneNumber = phoneNumber;
     }
 
-    public Member() {
+    protected Member() {
     }
 }

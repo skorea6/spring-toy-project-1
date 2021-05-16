@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header" />
+<body>
+<div class="container">
+    <div th:replace="fragments/bodyHeader :: bodyHeader"/>
+    <h3>게시판</h3>
+    <div>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>제목</th>
+                <th>글쓴이 이름</th>
+                <th>글쓴이 아이디</th>
+                <th>생성일</th>
+            </tr>
+            </thead>
+            <tbody id="noticeListTbody">
+            <tr>
+                <td class="text-center font-size-sm" colspan="5">공지 목록을 찾을 수가 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+        <ul id="noticeBlock" class="pagination justify-content-center"></ul>
+        <span id="noticeDetail"></span><br><br>
+        <button onclick="location.href='/notice/write'">글쓰기</button>
+    </div>
+    <div th:replace="fragments/footer :: footer" />
+</div> <!-- /container -->
+<input th:value="${nowPage}" type="text" id="nowPage" hidden="true"/>
+<script src="/js/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        function apiErrCode(request){
+            var state = request.status;
+            var msg = "";
+
+            if(state == 500){
+                var responseMessage = JSON.parse(request.responseText);
+                if(responseMessage.statusMessage != null){
+                    msg = "[" + responseMessage.statusCode + "]" + " " + responseMessage.statusMessage;
+                }else{
+                    switch (state){
+                        case 401 :
+                            msg ="토큰이 유효하지 않음";
+                            break;
+                        case 500 :
+                            msg ="Server Invalid";
+                            break;
+                        case 4201 :
+                            msg ="Json Missing";
+                            break;
+                        case 4301 :
+                            msg ="키를 찾을 수 없음";
+                            break;
+                        default :
+                            msg ="에러 코드를 확인할 수 없습니다.";
+                    }
+                }
+
+            }else{
+                msg ="서버 에러가 발생했습니다. (" + state + request.responseText + ")";
+            }
+
+            return msg;
+        }
+
+        // 공지사항 목록 출력
+        function _displayOrderList(displayNotice) {
+
+            $("#noticeListTbody").empty();
+
+            var html = '';
+            if (!displayNotice || displayNotice.length == 0) {
+                html += '<tr>';
+                html += '	<td class="text-center font-size-sm" colspan="5">조회된 데이터가 없습니다.</td>';
+                html += '</tr>';
+
+                $("#noticeListTbody").html(html);
+                return;
+            }
+
+            // list 출력
+            for (var i = 0, length = displayNotice.length; i < length; ++i) {
+                html += '<tr>';
+                html += '<td>' + displayNotice[i].noticeId + '</td>';
+                html += '<td><a href="./read?id=' + displayNotice[i].noticeId + '">' + displayNotice[i].title + '</a></td>';
+                html += '<td>' + displayNotice[i].writerName + '</td>';
+                html += '<td>' + displayNotice[i].writerMemberId + '</td>';
+                html += '<td>' + displayNotice[i].createdDate + '</td>';
+                html += '</tr>';
+            }
+            $("#noticeListTbody").html(html);
+
+        };
+
+        function _displayBlock(data){
+
+            var html = '';
+
+            if(data.prevBlockPageNum > 0) {
+                html += ' <li class="page-item">' +
+                    '<a class="page-link" href="./list?page=1" aria-label="First">' +
+                    '<span aria-hidden="true">처음페이지</span>' +
+                    '</a>' +
+                    '</li>';
+
+                html += ' <li class="page-item">' +
+                    '<a class="page-link" href="./list?page=' + data.prevBlockPageNum + '" aria-label="Previous">' +
+                    '<span aria-hidden="true">« 이전</span>' +
+                    '</a>' +
+                    '</li>';
+            }
+
+
+            for (var i = data.firstPageNum; i <= data.lastPageNum; ++i) {
+                if(i==data.pageNum){
+                    html += '<li class="page-item active">';
+                }else{
+                    html += '<li class="page-item">';
+                }
+                html += '<a class="page-link" href="./list?page=' + i +'">';
+                html += i;
+                html += '</a></li>';
+            }
+
+            if(data.nextBlockPageNum <= data.totalPageCount) {
+                html += ' <li class="page-item">' +
+                    '<a class="page-link" href="./list?page=' + data.nextBlockPageNum + '" aria-label="Next">' +
+                    '<span aria-hidden="true">다음 »</span>' +
+                    '</a>' +
+                    '</li>';
+            }
+
+
+            $("#noticeBlock").html(html);
+        }
+
+        var form = {
+            pageNum: $("#nowPage").val(),
+            pageElementCount: 2,
+            pageBlockCount: 2,
+            sortNm: "id",
+            sortType: "desc"
+        };
+
+        $.ajax({
+            url: '/api/v1/notice/list',
+            type: 'POST',
+            data: JSON.stringify(form),
+            async: false,
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (res) {
+                var result = res.data.noticeList;
+                _displayOrderList(result);
+                _displayBlock(res.data);
+                $("#noticeDetail").html('현재 페이지의 게시글 수: ' + res.data.numberOfElements + ' / 총 게시글 수: ' + res.data.totalElements + ' / 총 페이지 수: ' + res.data.totalPageCount);
+            },
+            error : function(request) {
+                alert(apiErrCode(request));
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

@@ -6,10 +6,10 @@ import javax.persistence.*;
 
 @Entity
 @Getter
-public class Board {
+public class Notice extends BaseDomain {
     @Id
     @GeneratedValue
-    @Column(name = "board_id")
+    @Column(name = "notice_id")
     private Long id;
 
     // 다대일 관계
@@ -18,5 +18,18 @@ public class Board {
     private Member member;
 
     private String title;
+
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
+
+
+    public Notice(Member member, String title, String content) {
+        this.member = member;
+        this.title = title;
+        this.content = content;
+    }
+
+    protected Notice() {
+
+    }
 }

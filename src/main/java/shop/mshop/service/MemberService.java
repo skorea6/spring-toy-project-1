@@ -4,20 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shop.mshop.api.MemberApiController;
 import shop.mshop.constant.CommonConstant;
 import shop.mshop.domain.Member;
 import shop.mshop.exception.global.ApiException;
-import shop.mshop.message.request.DeleteMemberRequest;
-import shop.mshop.message.request.UpdateMemberRequest;
-import shop.mshop.message.request.UpdatePwMemberRequest;
+import shop.mshop.message.request.MemberDeleteRequest;
+import shop.mshop.message.request.MemberUpdateRequest;
+import shop.mshop.message.request.MemberUpdatePwRequest;
 import shop.mshop.repository.MemberRepository;
-import shop.mshop.util.BaseUtil;
 import shop.mshop.util.HttpSessionUtils;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpSession;
-import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -78,7 +74,7 @@ public class MemberService {
     }
 
     @Transactional
-    public Long update(UpdateMemberRequest request, String sessionKey) {
+    public Long update(MemberUpdateRequest request, String sessionKey) {
         // 위의 멤버는 현재 세션의 멤버를 가져온것이에요.
         Member member = this.findMemberBySession(sessionKey);
 
@@ -106,7 +102,7 @@ public class MemberService {
     }
 
     @Transactional
-    public Long updatePw(UpdatePwMemberRequest request, String sessionKey) {
+    public Long updatePw(MemberUpdatePwRequest request, String sessionKey) {
         // 위의 멤버는 현재 세션의 멤버를 가져온것이에요.
         Member member = this.findMemberBySession(sessionKey);
 
@@ -138,8 +134,9 @@ public class MemberService {
     }
 
     @Transactional
-    public Member delete(DeleteMemberRequest request, String sessionKey) {
+    public Long delete(MemberDeleteRequest request, String sessionKey) {
         Member member = this.findMemberBySession(sessionKey);
+        Long id = member.getId();
 
         // 현재 비밀번호와 맞는지 확인
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
@@ -149,7 +146,7 @@ public class MemberService {
         // DB
         memberRepository.delete(member);
 
-        return member;
+        return id;
     }
 
     private void validateLengthName(String name) {

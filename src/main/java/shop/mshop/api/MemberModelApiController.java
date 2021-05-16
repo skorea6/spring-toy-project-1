@@ -15,7 +15,7 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequiredArgsConstructor
-public class ModelApiController {
+public class MemberModelApiController {
     private final MemberService memberService;
 
     @GetMapping("/api/v1/model/index")
