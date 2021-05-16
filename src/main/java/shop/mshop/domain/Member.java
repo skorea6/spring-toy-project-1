@@ -4,6 +4,8 @@ import lombok.Getter;
 import shop.mshop.util.RandomUtil;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,6 +27,11 @@ public class Member extends BaseDomain {
     private String phoneNumber;
     private String permission;
     private String sessionKey;
+
+
+    @OneToMany(mappedBy = "member")
+    private List<Board> boards = new ArrayList<>();
+
 
     public Member(String memberId, String password, String name, Address address, String email, String phoneNumber) {
         this.memberId = memberId;

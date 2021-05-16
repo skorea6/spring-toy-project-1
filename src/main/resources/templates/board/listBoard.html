@@ -4,34 +4,28 @@
 <body>
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-    <div class="jumbotron">
-        <h1>환영합니다!</h1>
-        <p id="name">로그인하지 않았습니다.</p>
-        <p class="lead">회원 기능</p>
-        <p>
-            <a class="btn btn-lg btn-secondary" href="/member/signup">회원 가입</a>
-            <a class="btn btn-lg btn-secondary" href="/member/login">로그인</a>
-            <a class="btn btn-lg btn-secondary" href="/member/logout">로그아웃</a>
-        </p>
-        <p>
-            <a class="btn btn-lg btn-secondary" href="/member/update">회원정보 변경</a>
-            <a class="btn btn-lg btn-secondary" href="/member/updatePw">비밀번호 변경</a>
-            <a class="btn btn-lg btn-secondary" href="/member/delete">회원 탈퇴</a>
-        </p>
-        <p class="lead">게시 기능</p>
-        <p>
-            <a class="btn btn-lg btn-dark" href="/board/list">게시판 목록</a>
-        </p>
-        <p class="lead">상품 기능</p>
-        <p>
-            <a class="btn btn-lg btn-dark" href="/items/new">상품 등록</a>
-            <a class="btn btn-lg btn-dark" href="/items">상품 목록</a>
-        </p>
-        <p class="lead">주문 기능</p>
-        <p>
-            <a class="btn btn-lg btn-info" href="/order">상품 주문</a>
-            <a class="btn btn-lg btn-info" href="/orders">주문 내역</a>
-        </p>
+    <h3>게시판</h3>
+    <div>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>상품명</th>
+                <th>가격</th>
+                <th>재고수량</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr th:each="item : ${items}">
+                <td th:text="${item.id}"></td>
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.price}"></td>
+                <td th:text="${item.stockQuantity}"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
@@ -72,18 +66,21 @@
             return msg;
         }
 
-        // 동기식 통신
         $.ajax({
-            url: '/api/v1/model/index',
+            url: '/api/v1/model/listBoard',
             type: 'GET',
             async: false,
             contentType: "application/json",
             dataType: 'json',
             success: function (res) {
                 var result = res.data;
-                $("#name").html(result.name + "님, 환영합니다~");
+                $("#memberId").val(result.memberId);
+            },
+            error : function(request) {
+                alert(apiErrCode(request));
             }
         });
+
     });
 </script>
 </body>
