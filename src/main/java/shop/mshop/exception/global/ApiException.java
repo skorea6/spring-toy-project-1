@@ -1,8 +1,10 @@
 package shop.mshop.exception.global;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ApiException extends RuntimeException{
     private int statusCode;
     private String statusMessage;

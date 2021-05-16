@@ -4,6 +4,8 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+    #jdbc:h2:tcp://localhost/~/mshop jdbc:mysql://skorea.duckdns.org/mshop
+    #org.h2.Driver com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: create
@@ -15,8 +17,6 @@ spring:
         default_batch_fetch_size: 1000
     # osiv 대규모 트래픽 발생시 false.
     open-in-view: false
-
-
 
 logging.level:
   org.hibernate.SQL: debug

@@ -18,6 +18,8 @@ repositories {
 	mavenCentral()
 }
 
+apply plugin: 'war'
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -28,7 +30,7 @@ dependencies {
 	implementation 'org.springframework.security:spring-security-test'
 	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.6'
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'com.h2database:h2' // com.h2database:h2 mysql:mysql-connector-java
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
