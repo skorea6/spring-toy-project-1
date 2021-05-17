@@ -11,4 +11,10 @@ public class NoticeReadResponse {
     private String writerMemberId;
     private String writerName;
     private String createdDate;
+    private Boolean writerCheck;
+
+    public NoticeReadResponse() {
+        this.writerCheck = false;
+    }
+
 }

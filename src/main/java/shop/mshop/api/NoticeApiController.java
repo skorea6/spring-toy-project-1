@@ -5,13 +5,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import shop.mshop.constant.ApiExceptionConstant;
+import shop.mshop.domain.Member;
 import shop.mshop.message.StatusResponse;
-import shop.mshop.message.request.NoticeListRequest;
-import shop.mshop.message.request.NoticeReadRequest;
-import shop.mshop.message.request.NoticeWriteRequest;
-import shop.mshop.message.response.NoticeListResponse;
-import shop.mshop.message.response.NoticeReadResponse;
-import shop.mshop.message.response.NoticeWriteResponse;
+import shop.mshop.message.request.*;
+import shop.mshop.message.response.*;
+import shop.mshop.service.MemberService;
 import shop.mshop.service.NoticeService;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.IpAddressUtil;
@@ -24,6 +22,8 @@ import javax.servlet.http.HttpSession;
 public class NoticeApiController {
 
     private final NoticeService noticeService;
+    private final MemberService memberService;
+
     ApiExceptionConstant apiExceptionConstant = new ApiExceptionConstant();
 
 
@@ -56,10 +56,33 @@ public class NoticeApiController {
     }
 
     @PostMapping("/api/v1/notice/read")
-    public StatusResponse<NoticeReadResponse> listNoticeV1(@RequestBody NoticeReadRequest request) {
+    public StatusResponse<NoticeReadResponse> listNoticeV1(@RequestBody NoticeReadRequest request, HttpSession httpSession) {
         // 오류 Exception 처리
         apiExceptionConstant.checkRequireAttr(request.getId(), "id");
+
         NoticeReadResponse response = noticeService.readById(request.getId());
+        response.setWriterCheck(noticeService.isWriterBySession(request.getId(), httpSession));
+
+        return new StatusResponse<>(response);
+    }
+
+    @PutMapping("/api/v1/notice/edit")
+    public StatusResponse<NoticeEditResponse> editNoticeV1(@RequestBody NoticeEditRequest request, HttpSession httpSession) {
+        // 오류 Exception 처리
+        apiExceptionConstant.checkRequireAttr(request.getId(), "id");
+        apiExceptionConstant.checkRequireAttr(request.getTitle(), "title");
+        apiExceptionConstant.checkRequireAttr(request.getContent(), "content");
+
+        NoticeEditResponse response = noticeService.editById(request, httpSession);
+
+        return new StatusResponse<>(response);
+    }
+
+    @PostMapping("/api/v1/notice/delete")
+    public StatusResponse<NoticeDeleteResponse> editNoticeV1(@RequestBody NoticeDeleteRequest request, HttpSession httpSession) {
+        // 오류 Exception 처리
+        apiExceptionConstant.checkRequireAttr(request.getId(), "id");
+        NoticeDeleteResponse response = noticeService.deleteById(request.getId(), httpSession);
 
         return new StatusResponse<>(response);
     }

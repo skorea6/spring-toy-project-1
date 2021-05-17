@@ -11,14 +11,20 @@ import shop.mshop.domain.Notice;
 import shop.mshop.domain.Member;
 import shop.mshop.exception.global.ApiException;
 import shop.mshop.message.NoticeList;
+import shop.mshop.message.request.NoticeDeleteRequest;
+import shop.mshop.message.request.NoticeEditRequest;
 import shop.mshop.message.request.NoticeListRequest;
 import shop.mshop.message.request.NoticeWriteRequest;
+import shop.mshop.message.response.NoticeDeleteResponse;
+import shop.mshop.message.response.NoticeEditResponse;
 import shop.mshop.message.response.NoticeListResponse;
 import shop.mshop.message.response.NoticeReadResponse;
 import shop.mshop.repository.NoticeRepository;
 import shop.mshop.util.DateUtil;
+import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.Paging;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,11 +45,14 @@ public class NoticeService {
         // content 는 5글자 이상, 1000글자 이하로
         validateLengthContent(request.getContent());
 
-        Notice board = new Notice(findMember, request.getTitle(), request.getContent());
-        board.setIpAddress(ipAddress);
+        // content 의 줄바꿈을 <br>로 변경경
+        request.setContent(request.getContent().replace("\n", "<br>"));
 
-        noticeRepository.save(board);
-        return board.getId();
+        Notice notice = new Notice(findMember, request.getTitle(), request.getContent());
+        notice.setIpAddress(ipAddress);
+
+        noticeRepository.save(notice);
+        return notice.getId();
     }
 
     public NoticeListResponse list(NoticeListRequest request) {
@@ -89,20 +98,79 @@ public class NoticeService {
     }
 
     public NoticeReadResponse readById(Long id) {
-        Optional<Notice> findNotice = noticeRepository.findById(id);
-        if (findNotice.isEmpty()) {
+        Optional<Notice> findNotices = noticeRepository.findById(id);
+        if (findNotices.isEmpty()) {
             throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
         }
 
+        Notice findNotice = findNotices.get();
+
         NoticeReadResponse response = new NoticeReadResponse();
-        response.setId(findNotice.get().getId());
-        response.setTitle(findNotice.get().getTitle());
-        response.setContent(findNotice.get().getContent());
-        response.setWriterMemberId(findNotice.get().getMember().getMemberId());
-        response.setWriterName(findNotice.get().getMember().getName());
-        response.setCreatedDate(DateUtil.dateToString(findNotice.get().getCreatedDate(), null));
+        response.setId(findNotice.getId());
+        response.setTitle(findNotice.getTitle());
+        response.setContent(findNotice.getContent());
+        response.setWriterMemberId(findNotice.getMember().getMemberId());
+        response.setWriterName(findNotice.getMember().getName());
+        response.setCreatedDate(DateUtil.dateToString(findNotice.getCreatedDate(), null));
 
         return response;
+    }
+
+    @Transactional
+    public NoticeEditResponse editById(NoticeEditRequest request, HttpSession httpSession) {
+        Optional<Notice> findNotices = noticeRepository.findById(request.getId());
+        if (findNotices.isEmpty()) {
+            throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
+        }
+
+        if (!this.isWriterBySession(request.getId(), httpSession)) {
+            throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
+        }
+
+        // title 은 5글자 이상, 20글자 이하로
+        validateLengthTitle(request.getTitle());
+
+        // content 는 5글자 이상, 1000글자 이하로
+        validateLengthContent(request.getContent());
+
+        // content 의 줄바꿈을 <br>로 변경경
+        request.setContent(request.getContent().replace("\n", "<br>"));
+
+        Notice findNotice = findNotices.get();
+        findNotice.changeNotice(request.getTitle(), request.getContent());
+
+        NoticeEditResponse response = new NoticeEditResponse(findNotice.getId());
+        return response;
+    }
+
+    @Transactional
+    public NoticeDeleteResponse deleteById(Long id, HttpSession httpSession) {
+        Optional<Notice> findNotices = noticeRepository.findById(id);
+        if (findNotices.isEmpty()) {
+            throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
+        }
+
+        if (!this.isWriterBySession(id, httpSession)) {
+            throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
+        }
+
+        noticeRepository.deleteById(findNotices.get().getId());
+        NoticeDeleteResponse response = new NoticeDeleteResponse(findNotices.get().getId());
+        return response;
+    }
+
+    public Boolean isWriterBySession(Long id, HttpSession httpSession) {
+        NoticeReadResponse response = this.readById(id);
+
+        // 작성자 본인 검사
+        if (HttpSessionUtils.isLoginUser(httpSession)) {
+            Member findMember = memberService.findMemberBySession(HttpSessionUtils.getMemberFromSession(httpSession));
+            if (findMember.getMemberId() == response.getWriterMemberId()) {
+                response.setWriterCheck(true);
+            }
+        }
+
+        return response.getWriterCheck();
     }
 
     private void validateLengthContent(String content) {

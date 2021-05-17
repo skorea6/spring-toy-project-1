@@ -41,4 +41,5 @@ public class CommonConstant {
     // 로그인
 
     public static final int ERR_NOT_LOGIN = 5000; // 로그인하지 않음
+    public static final int ERR_NOT_PERMISSION = 5001; // 로그인하지 않음
 }

@@ -7,6 +7,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
+import shop.mshop.domain.Member;
+import shop.mshop.message.response.NoticeReadResponse;
+import shop.mshop.service.MemberService;
+import shop.mshop.service.NoticeService;
 import shop.mshop.util.HttpSessionUtils;
 
 import javax.servlet.http.HttpSession;
@@ -16,6 +20,9 @@ import java.lang.invoke.MethodHandles;
 @RequiredArgsConstructor
 public class NoticeController {
     final protected static Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final MemberService memberService;
+    private final NoticeService noticeService;
 
     @GetMapping("/notice/list")
     public ModelAndView noticeList(@Param("page") Integer page) {
@@ -43,13 +50,41 @@ public class NoticeController {
     }
 
     @GetMapping("/notice/read")
-    public ModelAndView noticeRead(@Param("id") Integer id) {
+    public ModelAndView noticeRead(@Param("id") Long id, HttpSession httpSession) {
         ModelAndView mView = new ModelAndView();
         if (id == null) {
             mView.setViewName("redirect:list");
         }else{
             mView.setViewName("notice/readNotice");
             mView.addObject("nowId", id);
+            //mView.addObject("isMyContent", HttpSessionUtils.isLoginUser(httpSession));
+        }
+        return mView;
+    }
+
+    @GetMapping("/notice/edit")
+    public ModelAndView noticeEdit(@Param("id") Long id, HttpSession httpSession) {
+        ModelAndView mView = new ModelAndView();
+
+        if (id == null) {
+            mView.setViewName("redirect:list");
+        }else{
+            NoticeReadResponse response = noticeService.readById(id);
+            if (HttpSessionUtils.isLoginUser(httpSession)) {
+                Member findMember = memberService.findMemberBySession(HttpSessionUtils.getMemberFromSession(httpSession));
+                if (findMember.getMemberId() == response.getWriterMemberId()) {
+                    response.setWriterCheck(true);
+                }
+            }
+
+            if (response.getWriterCheck()) {
+                mView.setViewName("notice/editNotice");
+                mView.addObject("nowId", id);
+                mView.addObject("title", response.getTitle());
+                mView.addObject("content", response.getContent().replace("<br>", "\n"));
+            }else{
+                mView.setViewName("redirect:list");
+            }
         }
         return mView;
     }

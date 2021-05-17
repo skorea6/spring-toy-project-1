@@ -15,6 +15,7 @@ import shop.mshop.util.HttpSessionUtils;
 
 import javax.servlet.http.HttpSession;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -50,19 +51,27 @@ public class MemberService {
         validateLengthMemberId(member.getMemberId());
 
         // 비번은 6글자 이상 18글자 이하로
-        validateLengthPassword(member.getPassword());
+        //validateLengthPassword(member.getPassword());
 
 
         // [개발예정]
         // 닉네임은 한글,영어,숫자로만
         // 닉네임은 한글 6자 이내, 영어 12자 이내
 
-        // 비밀번호는 영어와 숫자로 이루어지게 설정
+        // 아이디에 띄어쓰기가 있는지 확인
+        validateContainSpace(member.getMemberId(), "아이디");
+
+        // 비밀번호는 영어,숫자,특수문자로 8~16글자로 이루어지게 설정
         validateRulePassword(member.getPassword());
 
+        // 비밀번호에 띄어쓰기가 있는지 확인
+        validateContainSpace(member.getPassword(), "비밀번호");
 
         // 이름은 2글자 이상 5글자 이하
         validateLengthName(member.getName());
+
+        // 이름에 띄어쓰기가 있는지 확인
+        validateContainSpace(member.getName(), "이름");
 
         // 비밀번호 암호화
         member.setPassword(passwordEncoder.encode(member.getPassword()));
@@ -95,6 +104,9 @@ public class MemberService {
         // 이름은 2글자 이상 5글자 이하
         validateLengthName(request.getName());
 
+        // 이름에 띄어쓰기가 있는지 확인
+        validateContainSpace(member.getName(), "이름");
+
         // DB
         member.updateMember(request.getName(), request.getEmail(), request.getPhoneNumber(), request.getAddress());
 
@@ -122,10 +134,13 @@ public class MemberService {
         }
 
         // 비번은 6글자 이상 18글자 이하로
-        validateLengthPassword(request.getNewPassword1());
+        //validateLengthPassword(request.getNewPassword1());
 
-        // 비밀번호는 영어와 숫자로 이루어지게 설정
+        // 비밀번호는 영어,숫자,특수문자로 8~16글자로 이루어지게 설정
         validateRulePassword(request.getNewPassword1());
+
+        // 비밀번호에 띄어쓰기가 있는지 확인
+        validateContainSpace(member.getPassword(), "비밀번호");
 
         // DB
         member.setPassword(passwordEncoder.encode(request.getNewPassword1()));
@@ -155,10 +170,27 @@ public class MemberService {
         }
     }
 
-    private void validateRulePassword(String password) {
-        if(!Pattern.matches("^[0-9a-zA-Z]*$", password)){
-            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "비밀번호에 영어와 숫자를 포함하여 입력하세요.", null);
+    private void validateContainSpace(String word, String name){
+        if(word.contains(" ")){
+            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, name + "에는 공백이 포함될 수 없습니다.", null);
         }
+    }
+
+    private void validateRulePassword(String password) {
+        Matcher matcher = Pattern.compile("^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\\\(\\\\)\\-_=+]).{8,16}$").matcher(password);
+        Matcher matcher2 = Pattern.compile("(.)\\1\\1\\1").matcher(password);
+
+        if(!matcher.matches()){
+            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "비밀번호에 영어, 숫자, 특수문자를 모두 포함하여 8~16글자를 입력하세요.", null);
+        }
+
+        if(matcher2.find()){
+            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "비밀번호에 연속된 문자 4개 이상 올 수 없습니다.", null);
+        }
+
+//        if(!Pattern.matches("^[0-9a-zA-Z]*$", password)){
+//            throw new ApiException(CommonConstant.ERR_JSON_ATTR_IS_INVALID, "비밀번호에 영어와 숫자를 포함하여 입력하세요.", null);
+//        }
     }
 
     private void validateLengthPassword(String password) {

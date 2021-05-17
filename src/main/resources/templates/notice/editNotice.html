@@ -4,21 +4,22 @@
 <body>
 <div class="container">
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
-    <h3 id="title"></h3>
-    <hr>
-    <span>글쓴이: <span id="writer"></span></span><br>
-    <span>등록일: <span id="date"></span></span><br>
-    <hr>
-    <h5 id="content"></h5>
-    <div id="btnControl"></div>
-    <hr>
+    <h3>공지사항 수정</h3>
+    <div class="form-group">
+        <label>제목</label>
+        <input type="text" id="title" th:value="${title}" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>내용</label>
+        <textarea type="text" id="content" rows="5" th:text="${content}" class="form-control"/></textarea>
+    </div>
+    <button id="btnEdit" class="btn btn-primary">공지사항 수정</button>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
 <input th:value="${nowId}" type="text" id="nowId" hidden="true"/>
 <script src="/js/jquery.min.js"></script>
 <script>
     $(document).ready(function() {
-
         function apiErrCode(request){
             var state = request.status;
             var msg = "";
@@ -53,53 +54,22 @@
             return msg;
         }
 
-
-
-
-        var form = {
-            id: $("#nowId").val()
-        };
-
-        // 동기식 통신
-        $.ajax({
-            url: '/api/v1/notice/read',
-            type: 'POST',
-            data: JSON.stringify(form),
-            async: false,
-            contentType: "application/json",
-            dataType: 'json',
-            success: function (res) {
-                var result = res.data;
-                $("#title").html(result.title);
-                $("#writer").html(result.writerName + ' (' + result.writerMemberId + ')');
-                $("#date").html(result.createdDate);
-                $("#content").html(result.content);
-
-
-                if(result.writerCheck == true){
-                    $("#btnControl").html('<hr><a href="./edit?id=' + $("#nowId").val() + '" class="btn btn-info">글 수정</a>  <button id="deleteNotice" class="btn btn-info">글 삭제</button>');
-                }
-            },
-            error : function(request) {
-                alert(apiErrCode(request));
-                location.href='/notice/list';
-            }
-        });
-
-        function deleteNotice() {
+        function edit() {
             var form = {
-                id: $("#nowId").val()
+                id: $("#nowId").val(),
+                title: $("#title").val(),
+                content: $("#content").val()
             };
 
             $.ajax({
-                url: '/api/v1/notice/delete',
-                type: 'POST',
+                url: '/api/v1/notice/edit',
+                type: 'PUT',
                 data: JSON.stringify(form),
                 contentType: "application/json",
                 dataType: 'json',
                 success: function (res) {
-                    alert("글 삭제 완료!");
-                    location.href = "/notice/list";
+                    alert("글 수정 완료!");
+                    location.href = "/notice/read?id=" + res.data.id;
                 },
                 error : function(request) {
                     alert(apiErrCode(request));
@@ -107,10 +77,9 @@
             });
         }
 
-        $("#deleteNotice").click(function(){
-            deleteNotice();
+        $("#btnEdit").click(function(){
+            edit();
         });
-
     });
 </script>
 </body>
