@@ -10,5 +10,7 @@ public class CommentNoticeList {
     private String comment;
     private String writerName;
     private String writerMemberId;
+    private Boolean writerCheck;
     private String createdDate;
+
 }

@@ -12,15 +12,23 @@ import shop.mshop.domain.Member;
 import shop.mshop.domain.Notice;
 import shop.mshop.exception.global.ApiException;
 import shop.mshop.message.CommentNoticeList;
+import shop.mshop.message.request.CommentNoticeEditRequest;
 import shop.mshop.message.request.CommentNoticeListRequest;
 import shop.mshop.message.request.CommentNoticeWriteRequest;
+import shop.mshop.message.request.NoticeEditRequest;
+import shop.mshop.message.response.CommentNoticeEditResponse;
 import shop.mshop.message.response.CommentNoticeListResponse;
+import shop.mshop.message.response.NoticeEditResponse;
+import shop.mshop.message.response.NoticeReadResponse;
 import shop.mshop.repository.CommentNoticeRepository;
 import shop.mshop.repository.NoticeRepository;
 import shop.mshop.util.DateUtil;
+import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.Paging;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,7 +41,7 @@ public class CommentNoticeService {
     @Transactional
     public Long writeByMemberSession(CommentNoticeWriteRequest request, String ipAddress, String sessionKey) {
         Member findMember = memberService.findMemberBySession(sessionKey);
-        Notice findNotice = noticeRepository.findById(request.getId()).get();
+        Notice findNotice = noticeRepository.findById(request.getNoticeId()).get();
 
         // comment 는 5글자 이상, 1000글자 이하로
         validateLengthComment(request.getComment());
@@ -49,7 +57,7 @@ public class CommentNoticeService {
         return commentNotice.getId();
     }
 
-    public CommentNoticeListResponse list(CommentNoticeListRequest request) {
+    public CommentNoticeListResponse list(CommentNoticeListRequest request, HttpSession httpSession) {
         //request.getId 유효성 검사
 
         Sort.Direction sortType;
@@ -67,9 +75,9 @@ public class CommentNoticeService {
         // JPA Paging 시작페이지 기본값이 0 이기 때문에, 1로 맞춰주는 작업을 진행함.
 
         PageRequest pageRequest = PageRequest.of(request.getPageNum() - 1, request.getPageElementCount(), sortType, request.getSortNm());
-        Page<CommentNotice> page = commentNoticeRepository.findAllByNoticeId(pageRequest, request.getId());
+        Page<CommentNotice> page = commentNoticeRepository.findAllByNoticeId(pageRequest, request.getNoticeId());
         List<CommentNoticeList> content = page
-                .map(commentNotice -> new CommentNoticeList(commentNotice.getId(), commentNotice.getComment(), commentNotice.getMember().getName(), commentNotice.getMember().getMemberId(), DateUtil.dateToString(commentNotice.getCreatedDate(), null)))
+                .map(commentNotice -> new CommentNoticeList(commentNotice.getId(), commentNotice.getComment(), commentNotice.getMember().getName(), commentNotice.getMember().getMemberId(), isWriterBySession(commentNotice.getMember().getId(), httpSession), DateUtil.dateToString(commentNotice.getCreatedDate(), null)))
                 .getContent();
 
         CommentNoticeListResponse response = new CommentNoticeListResponse();
@@ -91,6 +99,46 @@ public class CommentNoticeService {
         response.setCommentNoticeList(content);
 
         return response;
+    }
+
+
+    @Transactional
+    public CommentNoticeEditResponse editById(CommentNoticeEditRequest request, HttpSession httpSession) {
+        Optional<CommentNotice> findCommentNotices = commentNoticeRepository.findById(request.getCommentId());
+
+        if (findCommentNotices.isEmpty()) {
+            throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 댓글을 찾을 수 없습니다.", null);
+        }
+
+        if (!this.isWriterBySession(findCommentNotices.get().getMember().getId(), httpSession)) {
+            throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
+        }
+
+        // comment 는 5글자 이상, 1000글자 이하로
+        validateLengthComment(request.getComment());
+
+        // comment 의 줄바꿈을 <br>로 변경경
+        request.setComment(request.getComment().replace("\n", "<br>"));
+
+        CommentNotice findCommentNotice = findCommentNotices.get();
+        findCommentNotice.updateCommentNotice(request.getComment());
+
+        return new CommentNoticeEditResponse(findCommentNotice.getId());
+    }
+
+
+    public Boolean isWriterBySession(Long id, HttpSession httpSession) {
+        Boolean isTrue = false;
+
+        // 작성자 본인 검사
+        if (HttpSessionUtils.isLoginUser(httpSession)) {
+            Member findMember = memberService.findMemberBySession(HttpSessionUtils.getMemberFromSession(httpSession));
+            if (findMember.getId() == id) {
+                isTrue = true;
+            }
+        }
+
+        return isTrue;
     }
 
     private void validateLengthComment(String comment) {

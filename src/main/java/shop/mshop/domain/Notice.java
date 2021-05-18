@@ -36,7 +36,7 @@ public class Notice extends BaseDomain {
         this.content = content;
     }
 
-    public void changeNotice(String title, String content) {
+    public void updateNotice(String title, String content) {
         this.title = title;
         this.content = content;
     }

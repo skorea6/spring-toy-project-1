@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import shop.mshop.constant.ApiExceptionConstant;
-import shop.mshop.domain.Member;
 import shop.mshop.message.StatusResponse;
 import shop.mshop.message.request.*;
 import shop.mshop.message.response.*;
@@ -56,7 +55,7 @@ public class NoticeApiController {
     }
 
     @GetMapping("/api/v1/notice/read/{noticeId}")
-    public StatusResponse<NoticeReadResponse> listNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
+    public StatusResponse<NoticeReadResponse> readNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
         // 오류 Exception 처리
         apiExceptionConstant.checkRequireAttr(noticeId, "noticeId");
 
@@ -78,11 +77,11 @@ public class NoticeApiController {
         return new StatusResponse<>(response);
     }
 
-    @PostMapping("/api/v1/notice/delete")
-    public StatusResponse<NoticeDeleteResponse> editNoticeV1(@RequestBody NoticeDeleteRequest request, HttpSession httpSession) {
+    @GetMapping("/api/v1/notice/delete/{noticeId}")
+    public StatusResponse<NoticeDeleteResponse> editNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
         // 오류 Exception 처리
-        apiExceptionConstant.checkRequireAttr(request.getId(), "id");
-        NoticeDeleteResponse response = noticeService.deleteById(request.getId(), httpSession);
+        apiExceptionConstant.checkRequireAttr(noticeId, "noticeId");
+        NoticeDeleteResponse response = noticeService.deleteById(noticeId, httpSession);
 
         return new StatusResponse<>(response);
     }

@@ -6,5 +6,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class CommentNoticeListRequest extends ListRequestBase{
-    private Long id;
+    private Long noticeId;
 }

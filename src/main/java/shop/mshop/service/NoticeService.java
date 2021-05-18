@@ -137,7 +137,7 @@ public class NoticeService {
         request.setContent(request.getContent().replace("\n", "<br>"));
 
         Notice findNotice = findNotices.get();
-        findNotice.changeNotice(request.getTitle(), request.getContent());
+        findNotice.updateNotice(request.getTitle(), request.getContent());
 
         NoticeEditResponse response = new NoticeEditResponse(findNotice.getId());
         return response;

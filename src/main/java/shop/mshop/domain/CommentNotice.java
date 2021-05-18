@@ -31,6 +31,10 @@ public class CommentNotice extends BaseDomain{
         this.comment = comment;
     }
 
+    public void updateCommentNotice(String comment) {
+        this.comment = comment;
+    }
+
     protected CommentNotice() {
     }
 }

@@ -15,7 +15,7 @@
     <div id="commentListDiv"></div>
     <ul id="commentBlock" class="pagination justify-content-center"></ul>
     <textarea type="text" id="commentWrite" rows="2" class="form-control"/></textarea>
-    <button id="commentWriteBtn" class="btn btn-danger">댓글 등록</button>
+    <button id="commentWriteBtn" style="width:100%;" class="btn btn-danger">댓글 등록</button><br><br><br>
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
 <input th:value="${nowId}" type="text" id="nowId" hidden="true"/>
@@ -59,7 +59,7 @@
     function loadComment(page) {
         nowPageNum = page;
         var form = {
-            id: $("#nowId").val(),
+            noticeId: $("#nowId").val(),
             pageNum: page,
             pageElementCount: 2,
             pageBlockCount: 2,
@@ -101,12 +101,14 @@
         // list 출력
         for (var i = 0, length = displayComment.length; i < length; ++i) {
             html += '<span>' + displayComment[i].writerName + ' (' + displayComment[i].writerMemberId + ')</span>';
-            html += '<span style="text-align:right;"> / ' + displayComment[i].createdDate + '</span><br>';
-            html += '<span>' + displayComment[i].comment + '</span>';
+            html += '<span style="text-align:right;"> / ' + displayComment[i].createdDate + '</span>';
             if(displayComment[i].writerCheck == true){
-                html += '<button onclick="editComment(' + displayComment[i].id + ')" class="btn btn-info">댓글 수정</button>';
-                html += '<button onclick="deleteComment(' + displayComment[i].id + ')" class="btn btn-info">댓글 삭제</button>';
+                html += ' <button onclick="editComment(' + displayComment[i].id + ')" class="btn btn-info">수정</button>';
+                html += ' <button onclick="deleteComment(' + displayComment[i].id + ')" class="btn btn-info">삭제</button>';
             }
+            html += '<input value="' + displayComment[i].comment + '" type="text" data-id="commentOriginal_' + displayComment[i].id + '" hidden="true"/>';
+            html += '<br><div data-id="commentEditBox_' + displayComment[i].id + '"><span>' + displayComment[i].comment + '</span></div>';
+
             html += '<hr>';
         }
         $("#commentListDiv").html(html);
@@ -156,14 +158,9 @@
 
 
     function deleteNotice() {
-        var form = {
-            id: $("#nowId").val()
-        };
-
         $.ajax({
-            url: '/api/v1/notice/delete',
-            type: 'POST',
-            data: JSON.stringify(form),
+            url: '/api/v1/notice/delete/' + $("#nowId").val(),
+            type: 'GET',
             contentType: "application/json",
             dataType: 'json',
             success: function (res) {
@@ -178,7 +175,7 @@
 
     function commentWrite() {
         var form = {
-            id: $("#nowId").val(),
+            noticeId: $("#nowId").val(),
             comment: $("#commentWrite").val()
         };
 
@@ -199,6 +196,41 @@
         });
     }
 
+    function editComment(id) {
+        var html = '';
+        html += '<textarea type="text" data-id="commentWriteBox_' + id + '" rows="2" class="form-control">'
+            + $('input[data-id=commentOriginal_' + id + ']').val() + '</textarea>'
+            + '<button onclick="editCompleteComment(' + id + ')" class="btn btn-primary">수정 완료</button>'
+            + ' <button onclick="editCloseComment(' + id + ')" class="btn btn-primary">취소</button>';
+        $('div[data-id=commentEditBox_' + id + ']').html(html);
+    }
+
+    function editCompleteComment(id) {
+        var form = {
+            commentId: id,
+            comment: $("textarea[data-id=commentWriteBox_" + id + "]").val()
+        };
+
+        $.ajax({
+            url: '/api/v1/comment/notice/edit',
+            type: 'PUT',
+            data: JSON.stringify(form),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (res) {
+                alert("댓글 수정 완료!");
+                loadComment(nowPageNum);
+            },
+            error : function(request) {
+                alert(apiErrCode(request));
+            }
+        });
+    }
+
+    function editCloseComment(id) {
+        $('div[data-id=commentEditBox_' + id + ']').html($('input[data-id=commentOriginal_' + id + ']').val());
+    }
+
     $(document).ready(function() {
 
         // 동기식 통신
@@ -217,7 +249,7 @@
 
 
                 if(result.writerCheck == true){
-                    $("#btnControl").html('<hr><a href="./edit?id=' + $("#nowId").val() + '" class="btn btn-info">글 수정</a>  <button id="deleteNotice" class="btn btn-info">글 삭제</button>');
+                    $("#btnControl").html('<hr><a href="./edit?id=' + $("#nowId").val() + '" class="btn btn-success">글 수정</a>  <button id="deleteNotice" class="btn btn-success">글 삭제</button>');
                 }
             },
             error : function(request) {
