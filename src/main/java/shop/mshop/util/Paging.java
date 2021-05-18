@@ -1,6 +1,10 @@
 package shop.mshop.util;
 
 import lombok.Data;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import shop.mshop.constant.CommonConstant;
+import shop.mshop.exception.global.ApiException;
 
 @Data
 public class Paging {
@@ -19,4 +23,5 @@ public class Paging {
         this.lastPageNum = Math.min(totalPage, block * pageBlockCount);
         this.nextBlockPageNum = (block + 1)*pageBlockCount-(pageBlockCount-1);
     }
+
 }

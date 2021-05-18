@@ -33,6 +33,10 @@ public class Member extends BaseDomain {
     private List<Notice> notices = new ArrayList<>();
 
 
+    @OneToMany(mappedBy = "member")
+    private List<CommentNotice> commentNotices = new ArrayList<>();
+
+
     public Member(String memberId, String password, String name, Address address, String email, String phoneNumber) {
         this.memberId = memberId;
         this.password = password;

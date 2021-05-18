@@ -22,7 +22,7 @@ import javax.servlet.http.HttpSession;
 public class NoticeApiController {
 
     private final NoticeService noticeService;
-    private final MemberService memberService;
+    //private final MemberService memberService;
 
     ApiExceptionConstant apiExceptionConstant = new ApiExceptionConstant();
 
@@ -55,13 +55,13 @@ public class NoticeApiController {
         return new StatusResponse<>(response);
     }
 
-    @PostMapping("/api/v1/notice/read")
-    public StatusResponse<NoticeReadResponse> listNoticeV1(@RequestBody NoticeReadRequest request, HttpSession httpSession) {
+    @GetMapping("/api/v1/notice/read/{noticeId}")
+    public StatusResponse<NoticeReadResponse> listNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
         // 오류 Exception 처리
-        apiExceptionConstant.checkRequireAttr(request.getId(), "id");
+        apiExceptionConstant.checkRequireAttr(noticeId, "noticeId");
 
-        NoticeReadResponse response = noticeService.readById(request.getId());
-        response.setWriterCheck(noticeService.isWriterBySession(request.getId(), httpSession));
+        NoticeReadResponse response = noticeService.readById(noticeId);
+        response.setWriterCheck(noticeService.isWriterBySession(noticeId, httpSession));
 
         return new StatusResponse<>(response);
     }
@@ -86,4 +86,5 @@ public class NoticeApiController {
 
         return new StatusResponse<>(response);
     }
+
 }
