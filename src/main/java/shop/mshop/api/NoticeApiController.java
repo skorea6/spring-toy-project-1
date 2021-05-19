@@ -8,7 +8,6 @@ import shop.mshop.constant.ApiExceptionConstant;
 import shop.mshop.message.StatusResponse;
 import shop.mshop.message.request.*;
 import shop.mshop.message.response.*;
-import shop.mshop.service.MemberService;
 import shop.mshop.service.NoticeService;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.IpAddressUtil;
@@ -59,8 +58,7 @@ public class NoticeApiController {
         // 오류 Exception 처리
         apiExceptionConstant.checkRequireAttr(noticeId, "noticeId");
 
-        NoticeReadResponse response = noticeService.readById(noticeId);
-        response.setWriterCheck(noticeService.isWriterBySession(noticeId, httpSession));
+        NoticeReadResponse response = noticeService.readById(noticeId, httpSession);
 
         return new StatusResponse<>(response);
     }
@@ -78,7 +76,7 @@ public class NoticeApiController {
     }
 
     @GetMapping("/api/v1/notice/delete/{noticeId}")
-    public StatusResponse<NoticeDeleteResponse> editNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
+    public StatusResponse<NoticeDeleteResponse> deleteNoticeV1(@PathVariable("noticeId") Long noticeId, HttpSession httpSession) {
         // 오류 Exception 처리
         apiExceptionConstant.checkRequireAttr(noticeId, "noticeId");
         NoticeDeleteResponse response = noticeService.deleteById(noticeId, httpSession);

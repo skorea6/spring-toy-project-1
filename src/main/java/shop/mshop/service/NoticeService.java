@@ -11,7 +11,6 @@ import shop.mshop.domain.Notice;
 import shop.mshop.domain.Member;
 import shop.mshop.exception.global.ApiException;
 import shop.mshop.message.NoticeList;
-import shop.mshop.message.request.NoticeDeleteRequest;
 import shop.mshop.message.request.NoticeEditRequest;
 import shop.mshop.message.request.NoticeListRequest;
 import shop.mshop.message.request.NoticeWriteRequest;
@@ -97,7 +96,7 @@ public class NoticeService {
         return response;
     }
 
-    public NoticeReadResponse readById(Long id) {
+    public NoticeReadResponse readById(Long id, HttpSession httpSession) {
         Optional<Notice> findNotices = noticeRepository.findById(id);
         if (findNotices.isEmpty()) {
             throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
@@ -112,6 +111,7 @@ public class NoticeService {
         response.setWriterMemberId(findNotice.getMember().getMemberId());
         response.setWriterName(findNotice.getMember().getName());
         response.setCreatedDate(DateUtil.dateToString(findNotice.getCreatedDate(), null));
+        response.setWriterCheck(isWriterBySession(findNotice.getMember().getId(), httpSession));
 
         return response;
     }
@@ -123,7 +123,7 @@ public class NoticeService {
             throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
         }
 
-        if (!this.isWriterBySession(request.getId(), httpSession)) {
+        if (!this.isWriterBySession(findNotices.get().getMember().getId(), httpSession)) {
             throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
         }
 
@@ -150,7 +150,7 @@ public class NoticeService {
             throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 게시물을 찾을 수 없습니다.", null);
         }
 
-        if (!this.isWriterBySession(id, httpSession)) {
+        if (!this.isWriterBySession(findNotices.get().getMember().getId(), httpSession)) {
             throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
         }
 
@@ -160,17 +160,17 @@ public class NoticeService {
     }
 
     public Boolean isWriterBySession(Long id, HttpSession httpSession) {
-        NoticeReadResponse response = this.readById(id);
+        Boolean isTrue = false;
 
         // 작성자 본인 검사
         if (HttpSessionUtils.isLoginUser(httpSession)) {
             Member findMember = memberService.findMemberBySession(HttpSessionUtils.getMemberFromSession(httpSession));
-            if (findMember.getMemberId() == response.getWriterMemberId()) {
-                response.setWriterCheck(true);
+            if (findMember.getId() == id) {
+                isTrue = true;
             }
         }
 
-        return response.getWriterCheck();
+        return isTrue;
     }
 
     private void validateLengthContent(String content) {

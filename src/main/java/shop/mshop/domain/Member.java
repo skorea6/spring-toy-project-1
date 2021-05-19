@@ -29,11 +29,11 @@ public class Member extends BaseDomain {
     private String sessionKey;
 
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
     private List<Notice> notices = new ArrayList<>();
 
 
-    @OneToMany(mappedBy = "member")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "member")
     private List<CommentNotice> commentNotices = new ArrayList<>();
 
 

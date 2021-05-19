@@ -199,7 +199,7 @@
     function editComment(id) {
         var html = '';
         html += '<textarea type="text" data-id="commentWriteBox_' + id + '" rows="2" class="form-control">'
-            + $('input[data-id=commentOriginal_' + id + ']').val() + '</textarea>'
+            + $('input[data-id=commentOriginal_' + id + ']').val().replace(/<br>/gi, "\n") + '</textarea>'
             + '<button onclick="editCompleteComment(' + id + ')" class="btn btn-primary">수정 완료</button>'
             + ' <button onclick="editCloseComment(' + id + ')" class="btn btn-primary">취소</button>';
         $('div[data-id=commentEditBox_' + id + ']').html(html);
@@ -229,6 +229,22 @@
 
     function editCloseComment(id) {
         $('div[data-id=commentEditBox_' + id + ']').html($('input[data-id=commentOriginal_' + id + ']').val());
+    }
+
+    function deleteComment(id) {
+        $.ajax({
+            url: '/api/v1/comment/notice/delete/' + id,
+            type: 'GET',
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (res) {
+                alert("댓글 삭제 완료!");
+                loadComment(nowPageNum);
+            },
+            error : function(request) {
+                alert(apiErrCode(request));
+            }
+        });
     }
 
     $(document).ready(function() {

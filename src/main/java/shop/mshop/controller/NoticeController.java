@@ -69,14 +69,7 @@ public class NoticeController {
         if (id == null) {
             mView.setViewName("redirect:list");
         }else{
-            NoticeReadResponse response = noticeService.readById(id);
-            if (HttpSessionUtils.isLoginUser(httpSession)) {
-                Member findMember = memberService.findMemberBySession(HttpSessionUtils.getMemberFromSession(httpSession));
-                if (findMember.getMemberId() == response.getWriterMemberId()) {
-                    response.setWriterCheck(true);
-                }
-            }
-
+            NoticeReadResponse response = noticeService.readById(id, httpSession);
             if (response.getWriterCheck()) {
                 mView.setViewName("notice/editNotice");
                 mView.addObject("nowId", id);

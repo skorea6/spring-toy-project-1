@@ -9,11 +9,7 @@ import shop.mshop.message.StatusResponse;
 import shop.mshop.message.request.CommentNoticeEditRequest;
 import shop.mshop.message.request.CommentNoticeListRequest;
 import shop.mshop.message.request.CommentNoticeWriteRequest;
-import shop.mshop.message.request.NoticeEditRequest;
-import shop.mshop.message.response.CommentNoticeEditResponse;
-import shop.mshop.message.response.CommentNoticeListResponse;
-import shop.mshop.message.response.CommentNoticeWriteResponse;
-import shop.mshop.message.response.NoticeEditResponse;
+import shop.mshop.message.response.*;
 import shop.mshop.service.CommentNoticeService;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.IpAddressUtil;
@@ -67,6 +63,15 @@ public class CommentNoticeApiController {
         apiExceptionConstant.checkRequireAttr(request.getComment(), "comment");
 
         CommentNoticeEditResponse response = commentNoticeService.editById(request, httpSession);
+
+        return new StatusResponse<>(response);
+    }
+
+    @GetMapping("/api/v1/comment/notice/delete/{commentId}")
+    public StatusResponse<CommentNoticeDeleteResponse> deleteCommentNoticeV1(@PathVariable("commentId") Long commentId, HttpSession httpSession) {
+        // 오류 Exception 처리
+        apiExceptionConstant.checkRequireAttr(commentId, "commentId");
+        CommentNoticeDeleteResponse response = commentNoticeService.deleteById(commentId, httpSession);
 
         return new StatusResponse<>(response);
     }

@@ -15,11 +15,7 @@ import shop.mshop.message.CommentNoticeList;
 import shop.mshop.message.request.CommentNoticeEditRequest;
 import shop.mshop.message.request.CommentNoticeListRequest;
 import shop.mshop.message.request.CommentNoticeWriteRequest;
-import shop.mshop.message.request.NoticeEditRequest;
-import shop.mshop.message.response.CommentNoticeEditResponse;
-import shop.mshop.message.response.CommentNoticeListResponse;
-import shop.mshop.message.response.NoticeEditResponse;
-import shop.mshop.message.response.NoticeReadResponse;
+import shop.mshop.message.response.*;
 import shop.mshop.repository.CommentNoticeRepository;
 import shop.mshop.repository.NoticeRepository;
 import shop.mshop.util.DateUtil;
@@ -124,6 +120,21 @@ public class CommentNoticeService {
         findCommentNotice.updateCommentNotice(request.getComment());
 
         return new CommentNoticeEditResponse(findCommentNotice.getId());
+    }
+
+    @Transactional
+    public CommentNoticeDeleteResponse deleteById(Long id, HttpSession httpSession) {
+        Optional<CommentNotice> findCommentNotices = commentNoticeRepository.findById(id);
+        if (findCommentNotices.isEmpty()) {
+            throw new ApiException(CommonConstant.ERR_JSON_REQUIRE_ATTR_IS_NOT_FOUND, "해당 댓글을 찾을 수 없습니다.", null);
+        }
+
+        if (!this.isWriterBySession(findCommentNotices.get().getMember().getId(), httpSession)) {
+            throw new ApiException(CommonConstant.ERR_NOT_PERMISSION, "권한이 없습니다.", null);
+        }
+
+        commentNoticeRepository.deleteById(findCommentNotices.get().getId());
+        return new CommentNoticeDeleteResponse(findCommentNotices.get().getId());
     }
 
 

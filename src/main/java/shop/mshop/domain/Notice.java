@@ -25,7 +25,7 @@ public class Notice extends BaseDomain {
     private String content;
 
     // 일대다 관계
-    @OneToMany(mappedBy = "notice")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "notice")
     private List<CommentNotice> commentNotices = new ArrayList<>();
 
 
