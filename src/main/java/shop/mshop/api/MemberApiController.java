@@ -34,9 +34,10 @@ public class MemberApiController {
         apiExceptionConstant.checkRequireAttr(request.getName(), "name");
         apiExceptionConstant.checkRequireAttr(request.getEmail(), "email");
         apiExceptionConstant.checkRequireAttr(request.getPhoneNumber(), "phoneNumber");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getCity(), "address.city");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getStreet(), "address.street");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getZipcode(), "address.zipcode");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getPostcode(), "address.postcode");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getAddress(), "address.address");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getDetailAddress(), "address.detailAddress");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getExtraAddress(), "address.extraAddress");
 
         // 클라이언트 아이피 주소 가져오기
         String ipAddress = null;
@@ -69,9 +70,10 @@ public class MemberApiController {
         apiExceptionConstant.checkRequireAttr(request.getName(), "name");
         apiExceptionConstant.checkRequireAttr(request.getEmail(), "email");
         apiExceptionConstant.checkRequireAttr(request.getPhoneNumber(), "phoneNumber");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getCity(), "address.city");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getStreet(), "address.street");
-        apiExceptionConstant.checkRequireAttr(request.getAddress().getZipcode(), "address.zipcode");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getPostcode(), "address.postcode");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getAddress(), "address.address");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getDetailAddress(), "address.detailAddress");
+        apiExceptionConstant.checkRequireAttr(request.getAddress().getExtraAddress(), "address.extraAddress");
 
         // 멤버 찾기
         Long updatedMemberId = memberService.update(request, HttpSessionUtils.getMemberFromSession(httpSession));

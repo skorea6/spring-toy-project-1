@@ -32,7 +32,7 @@ public class MemberRepositoryTest {
     @Test
     public void loginMember() throws Exception {
         //given
-        Member member = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address("서울시", "역삼거리", 34235), "talk105@naver.com", "010-3244-6593");
+        Member member = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address(23423, "역삼거리", "디테일", "기타"), "talk105@naver.com", "010-3244-6593");
         memberService.save(member);
 
         //when
@@ -47,10 +47,10 @@ public class MemberRepositoryTest {
     @Rollback(value = true)
     public void duplicateMember() throws Exception {
         //given
-        Member member = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address("서울시", "역삼거리", 34235), "talk105@naver.com", "010-3244-6593");
+        Member member = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address(23423, "역삼거리", "디테일", "기타"), "talk105@naver.com", "010-3244-6593");
         memberService.save(member);
 
-        Member member2 = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address("서울시", "역삼거리", 34235), "talk105@naver.com", "010-3244-6593");
+        Member member2 = new Member("talk105", passwordEncoder.encode("password1234"), "최민준", new Address(23423, "역삼거리", "디테일", "기타"), "talk105@naver.com", "010-3244-6593");
 
         //then
         // 중복 아이디 체크 - 에러발생 O
@@ -63,7 +63,7 @@ public class MemberRepositoryTest {
     @Test
     public void updateMember() throws Exception {
         //given
-        Member member = new Member("talk105", "password3", "최민준", new Address("서울시", "역삼거리", 34235), "talk105@naver.com", "010-3244-6593");
+        Member member = new Member("talk105", "password3", "최민준", new Address(23423, "역삼거리", "디테일", "기타"), "talk105@naver.com", "010-3244-6593");
         memberService.save(member);
 
         //when
