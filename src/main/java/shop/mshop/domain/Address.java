@@ -7,7 +7,7 @@ import javax.persistence.Embeddable;
 @Embeddable
 @Getter
 public class Address {
-    private Integer postcode;
+    private String postcode;
     private String address;
     private String detailAddress;
     private String extraAddress;
@@ -15,7 +15,7 @@ public class Address {
     protected Address() {
     }
 
-    public Address(Integer postcode, String address, String detailAddress, String extraAddress) {
+    public Address(String postcode, String address, String detailAddress, String extraAddress) {
         this.postcode = postcode;
         this.address = address;
         this.detailAddress = detailAddress;

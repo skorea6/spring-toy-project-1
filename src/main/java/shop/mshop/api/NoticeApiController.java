@@ -5,10 +5,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import shop.mshop.constant.ApiExceptionConstant;
+import shop.mshop.constant.CommonConstant;
+import shop.mshop.exception.global.ApiException;
 import shop.mshop.message.StatusResponse;
 import shop.mshop.message.request.*;
 import shop.mshop.message.response.*;
 import shop.mshop.service.NoticeService;
+import shop.mshop.util.BaseUtil;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.IpAddressUtil;
 
@@ -47,6 +50,9 @@ public class NoticeApiController {
         apiExceptionConstant.checkRequireAttr(request.getPageBlockCount(), "pageBlockCount");
         apiExceptionConstant.checkRequireAttr(request.getSortNm(), "sortNm");
         apiExceptionConstant.checkRequireAttr(request.getSortType(), "sortType");
+
+
+
 
         NoticeListResponse response = noticeService.list(request);
 

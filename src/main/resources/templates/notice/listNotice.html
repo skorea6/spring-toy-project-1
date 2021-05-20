@@ -6,6 +6,17 @@
     <div th:replace="fragments/bodyHeader :: bodyHeader"/>
     <h3>게시판</h3>
     <div>
+        <select id="searchBy" style="width:25%;display:inline;" class="form-control">
+            <option value="title" selected>제목</option>
+            <option value="content">내용</option>
+            <option value="writerName">글쓴이 이름</option>
+            <option value="writerMemberId">글쓴이 아이디</option>
+        </select>
+        <input type="text" id="searchWord" style="width:53%;display:inline;" class="form-control">
+        <button id="searchBtn" style="width:20%;display:inline;" class="btn btn-success">검색</button>
+    </div><br>
+
+    <div>
         <table class="table table-striped">
             <thead>
             <tr>
@@ -29,112 +40,124 @@
     <div th:replace="fragments/footer :: footer" />
 </div> <!-- /container -->
 <input th:value="${nowPage}" type="text" id="nowPage" hidden="true"/>
+<input th:value="${sWord}" type="text" id="sword" hidden="true"/>
+<input th:value="${sBy}" type="text" id="sby" hidden="true"/>
 <script src="/js/jquery.min.js"></script>
 <script>
-    $(document).ready(function() {
-        function apiErrCode(request){
-            var state = request.status;
-            var msg = "";
+    function apiErrCode(request){
+        var state = request.status;
+        var msg = "";
 
-            if(state == 500){
-                var responseMessage = JSON.parse(request.responseText);
-                if(responseMessage.statusMessage != null){
-                    msg = "[" + responseMessage.statusCode + "]" + " " + responseMessage.statusMessage;
-                }else{
-                    switch (state){
-                        case 401 :
-                            msg ="토큰이 유효하지 않음";
-                            break;
-                        case 500 :
-                            msg ="Server Invalid";
-                            break;
-                        case 4201 :
-                            msg ="Json Missing";
-                            break;
-                        case 4301 :
-                            msg ="키를 찾을 수 없음";
-                            break;
-                        default :
-                            msg ="에러 코드를 확인할 수 없습니다.";
-                    }
-                }
-
+        if(state == 500){
+            var responseMessage = JSON.parse(request.responseText);
+            if(responseMessage.statusMessage != null){
+                msg = "[" + responseMessage.statusCode + "]" + " " + responseMessage.statusMessage;
             }else{
-                msg ="서버 에러가 발생했습니다. (" + state + request.responseText + ")";
+                switch (state){
+                    case 401 :
+                        msg ="토큰이 유효하지 않음";
+                        break;
+                    case 500 :
+                        msg ="Server Invalid";
+                        break;
+                    case 4201 :
+                        msg ="Json Missing";
+                        break;
+                    case 4301 :
+                        msg ="키를 찾을 수 없음";
+                        break;
+                    default :
+                        msg ="에러 코드를 확인할 수 없습니다.";
+                }
             }
 
-            return msg;
+        }else{
+            msg ="서버 에러가 발생했습니다. (" + state + request.responseText + ")";
         }
 
-        // 공지사항 목록 출력
-        function _displayOrderList(displayNotice) {
+        return msg;
+    }
 
-            $("#noticeListTbody").empty();
+    // 공지사항 목록 출력
+    function _displayOrderList(displayNotice) {
 
-            var html = '';
-            if (!displayNotice || displayNotice.length == 0) {
-                html += '<tr>';
-                html += '	<td class="text-center font-size-sm" colspan="5">조회된 데이터가 없습니다.</td>';
-                html += '</tr>';
+        $("#noticeListTbody").empty();
 
-                $("#noticeListTbody").html(html);
-                return;
-            }
+        var html = '';
+        if (!displayNotice || displayNotice.length == 0) {
+            html += '<tr>';
+            html += '	<td class="text-center font-size-sm" colspan="5">조회된 데이터가 없습니다.</td>';
+            html += '</tr>';
 
-            // list 출력
-            for (var i = 0, length = displayNotice.length; i < length; ++i) {
-                html += '<tr>';
-                html += '<td>' + displayNotice[i].noticeId + '</td>';
-                html += '<td><a href="./read?id=' + displayNotice[i].noticeId + '">' + displayNotice[i].title + '</a></td>';
-                html += '<td>' + displayNotice[i].writerName + '</td>';
-                html += '<td>' + displayNotice[i].writerMemberId + '</td>';
-                html += '<td>' + displayNotice[i].createdDate + '</td>';
-                html += '</tr>';
-            }
             $("#noticeListTbody").html(html);
+            return;
+        }
 
-        };
+        // list 출력
+        for (var i = 0, length = displayNotice.length; i < length; ++i) {
+            html += '<tr>';
+            html += '<td>' + displayNotice[i].noticeId + '</td>';
+            html += '<td><a href="./read/' + displayNotice[i].noticeId + '">' + displayNotice[i].title + '</a></td>';
+            html += '<td>' + displayNotice[i].writerName + '</td>';
+            html += '<td>' + displayNotice[i].writerMemberId + '</td>';
+            html += '<td>' + displayNotice[i].createdDate + '</td>';
+            html += '</tr>';
+        }
+        $("#noticeListTbody").html(html);
 
-        function _displayBlock(data){
+    };
 
-            var html = '';
+    function _displayBlock(data){
 
-            if(data.prevBlockPageNum > 0) {
-                html += ' <li class="page-item">' +
-                    '<a class="page-link" href="./list?page=1" aria-label="First">' +
-                    '<span aria-hidden="true">처음페이지</span>' +
-                    '</a>' +
-                    '</li>';
+        var html = '';
 
-                html += ' <li class="page-item">' +
-                    '<a class="page-link" href="./list?page=' + data.prevBlockPageNum + '" aria-label="Previous">' +
-                    '<span aria-hidden="true">« 이전</span>' +
-                    '</a>' +
-                    '</li>';
+        if(data.prevBlockPageNum > 0) {
+            html += ' <li class="page-item">' +
+                '<a class="page-link" href="./list?page=1&sword=' + $("#sword").val() + '&sby=' + $("#sby").val() + '" aria-label="First">' +
+                '<span aria-hidden="true">처음페이지</span>' +
+                '</a>' +
+                '</li>';
+
+            html += ' <li class="page-item">' +
+                '<a class="page-link" href="./list?page=' + data.prevBlockPageNum + '&sword=' + $("#sword").val() + '&sby=' + $("#sby").val() + '" aria-label="Previous">' +
+                '<span aria-hidden="true">« 이전</span>' +
+                '</a>' +
+                '</li>';
+        }
+
+
+        for (var i = data.firstPageNum; i <= data.lastPageNum; ++i) {
+            if(i==data.pageNum){
+                html += '<li class="page-item active">';
+            }else{
+                html += '<li class="page-item">';
             }
+            html += '<a class="page-link" href="./list?page=' + i +'&sword=' + $("#sword").val() + '&sby=' + $("#sby").val() + '">';
+            html += i;
+            html += '</a></li>';
+        }
+
+        if(data.nextBlockPageNum <= data.totalPageCount) {
+            html += ' <li class="page-item">' +
+                '<a class="page-link" href="./list?page=' + data.nextBlockPageNum + '&sword=' + $("#sword").val() + '&sby=' + $("#sby").val() + '" aria-label="Next">' +
+                '<span aria-hidden="true">다음 »</span>' +
+                '</a>' +
+                '</li>';
+        }
 
 
-            for (var i = data.firstPageNum; i <= data.lastPageNum; ++i) {
-                if(i==data.pageNum){
-                    html += '<li class="page-item active">';
-                }else{
-                    html += '<li class="page-item">';
-                }
-                html += '<a class="page-link" href="./list?page=' + i +'">';
-                html += i;
-                html += '</a></li>';
-            }
+        $("#noticeBlock").html(html);
+    }
 
-            if(data.nextBlockPageNum <= data.totalPageCount) {
-                html += ' <li class="page-item">' +
-                    '<a class="page-link" href="./list?page=' + data.nextBlockPageNum + '" aria-label="Next">' +
-                    '<span aria-hidden="true">다음 »</span>' +
-                    '</a>' +
-                    '</li>';
-            }
+    function searchGo() {
+        location.href = "./list?sword=" + $("#searchWord").val() + "&sby=" + $("#searchBy").val();
+    }
 
 
-            $("#noticeBlock").html(html);
+    $(document).ready(function() {
+        if ($("#sby").val() != "" && $("#sword").val() != "") {
+            $("#searchBy").val($("#sby").val());
+            $("#searchWord").val($("#sword").val());
         }
 
         var form = {
@@ -142,7 +165,9 @@
             pageElementCount: 2,
             pageBlockCount: 2,
             sortNm: "id",
-            sortType: "desc"
+            sortType: "desc",
+            searchWord: $("#sword").val(),
+            searchBy: $("#sby").val()
         };
 
         $.ajax({
@@ -161,6 +186,10 @@
             error : function(request) {
                 alert(apiErrCode(request));
             }
+        });
+
+        $("#searchBtn").click(function(){
+            searchGo();
         });
 
     });

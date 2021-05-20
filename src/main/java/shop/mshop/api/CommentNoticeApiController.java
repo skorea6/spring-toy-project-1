@@ -19,7 +19,7 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequiredArgsConstructor
-public class CommentNoticeApiController {
+public class  CommentNoticeApiController {
 
     private final CommentNoticeService commentNoticeService;
     //private final MemberService memberService;

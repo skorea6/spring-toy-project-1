@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import shop.mshop.domain.Member;
 import shop.mshop.message.response.NoticeReadResponse;
@@ -13,6 +16,7 @@ import shop.mshop.service.MemberService;
 import shop.mshop.service.NoticeService;
 import shop.mshop.util.HttpSessionUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.lang.invoke.MethodHandles;
 
@@ -25,13 +29,17 @@ public class NoticeController {
     private final NoticeService noticeService;
 
     @GetMapping("/notice/list")
-    public ModelAndView noticeList(@Param("page") Integer page) {
-        if (page == null) {
-            page = 1;
+    public ModelAndView noticeList(HttpServletRequest request) {
+        String page = "1";
+        if (request.getParameter("page") != null) {
+            page = request.getParameter("page");
         }
+
         ModelAndView mView = new ModelAndView();
         mView.setViewName("notice/listNotice");
         mView.addObject("nowPage", page);
+        mView.addObject("sWord", request.getParameter("sword"));
+        mView.addObject("sBy", request.getParameter("sby"));
 
         return mView;
     }
@@ -49,8 +57,8 @@ public class NoticeController {
         return mView;
     }
 
-    @GetMapping("/notice/read")
-    public ModelAndView noticeRead(@Param("id") Long id, HttpSession httpSession) {
+    @GetMapping("/notice/read/{id}")
+    public ModelAndView noticeRead(@PathVariable("id") Long id, HttpSession httpSession) {
         ModelAndView mView = new ModelAndView();
         if (id == null) {
             mView.setViewName("redirect:list");
@@ -62,8 +70,8 @@ public class NoticeController {
         return mView;
     }
 
-    @GetMapping("/notice/edit")
-    public ModelAndView noticeEdit(@Param("id") Long id, HttpSession httpSession) {
+    @GetMapping("/notice/edit/{id}")
+    public ModelAndView noticeEdit(@PathVariable("id") Long id, HttpSession httpSession) {
         ModelAndView mView = new ModelAndView();
 
         if (id == null) {

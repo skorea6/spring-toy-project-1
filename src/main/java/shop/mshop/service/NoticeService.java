@@ -19,6 +19,7 @@ import shop.mshop.message.response.NoticeEditResponse;
 import shop.mshop.message.response.NoticeListResponse;
 import shop.mshop.message.response.NoticeReadResponse;
 import shop.mshop.repository.NoticeRepository;
+import shop.mshop.util.BaseUtil;
 import shop.mshop.util.DateUtil;
 import shop.mshop.util.HttpSessionUtils;
 import shop.mshop.util.Paging;
@@ -70,7 +71,26 @@ public class NoticeService {
         // JPA Paging 시작페이지 기본값이 0 이기 때문에, 1로 맞춰주는 작업을 진행함.
 
         PageRequest pageRequest = PageRequest.of(request.getPageNum()-1, request.getPageElementCount(), sortType, request.getSortNm());
-        Page<Notice> page = noticeRepository.findAll(pageRequest);
+
+        Page<Notice> page;
+
+        if (!BaseUtil.isEmpty(request.getSearchWord())) {
+            if (request.getSearchBy().equals("title")) {
+                page = noticeRepository.findAllByTitleContaining(pageRequest, request.getSearchWord());
+            }else if(request.getSearchBy().equals("content")){
+                page = noticeRepository.findAllByContentContaining(pageRequest, request.getSearchWord());
+            }else if(request.getSearchBy().equals("writerName")){
+                page = noticeRepository.findAllByMember_NameContaining(pageRequest, request.getSearchWord());
+            }else if(request.getSearchBy().equals("writerMemberId")){
+                page = noticeRepository.findAllByMember_MemberId(pageRequest, request.getSearchWord());
+            }else{
+                page = noticeRepository.findAll(pageRequest);
+            }
+        }else{
+            page = noticeRepository.findAll(pageRequest);
+        }
+
+
         List<NoticeList> content = page
                 .map(notice -> new NoticeList(notice.getId(), notice.getTitle(), notice.getMember().getName(), notice.getMember().getMemberId(), DateUtil.dateToString(notice.getCreatedDate(), null)))
                 .getContent();
