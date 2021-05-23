@@ -22,6 +22,8 @@
 
 
 ### 데이터베이스 ERD
+- ERD Cloud 주소: https://www.erdcloud.com/d/6NxfqiZTsv4nfdsrA
+
 ![image](https://user-images.githubusercontent.com/13993684/119247300-45437e00-bbc3-11eb-8847-345636b83ead.png)
 
 
